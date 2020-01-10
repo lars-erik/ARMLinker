@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARMCustomTool", "ARMCustomTool\ARMCustomTool.csproj", "{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARMCustomTool.Tests", "ARMCustomTool.Tests\ARMCustomTool.Tests.csproj", "{847C6F8C-2C14-4389-B922-075129F2B01F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{847C6F8C-2C14-4389-B922-075129F2B01F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{847C6F8C-2C14-4389-B922-075129F2B01F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{847C6F8C-2C14-4389-B922-075129F2B01F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{847C6F8C-2C14-4389-B922-075129F2B01F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B4764795-5378-4E27-9DDB-B0DAC8A5FE7C}
+	EndGlobalSection
+EndGlobal
