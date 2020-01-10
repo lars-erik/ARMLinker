@@ -5,9 +5,8 @@ namespace ARMCustomTool
 {
     public class PhysicalFileSystem : IFileSystem
     {
-        public string ReadFile(string path)
-        {
-            return File.ReadAllText(path);
-        }
+        public string ReadFile(string path) => File.ReadAllText(path);
+
+        public bool Exists(string path) => File.Exists(path);
     }
 }

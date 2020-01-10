@@ -21,6 +21,7 @@ namespace ARMCustomTool
     {
         private readonly IFileSystem fileSystem;
         private string inputPath;
+        private IVsGeneratorProgress progress;
         public const string PackageGuidString = "a7c0fed9-4150-4ab6-92c9-19576e038fbb";
 
 #if ISSAMPLE
@@ -57,13 +58,14 @@ namespace ARMCustomTool
 
         public int DefaultExtension(out string pbstrDefaultExtension)
         {
-            pbstrDefaultExtension = ".generated.txt";
+            pbstrDefaultExtension = ".linked.json";
             return pbstrDefaultExtension.Length;
         }
 
         public int Generate(string wszInputFilePath, string bstrInputFileContents, string wszDefaultNamespace,
             IntPtr[] rgbOutputFileContents, out uint pcbOutput, IVsGeneratorProgress pGenerateProgress)
         {
+            progress = pGenerateProgress;
             inputPath = wszInputFilePath;
             try
             {
@@ -74,11 +76,9 @@ namespace ARMCustomTool
                 var content = inputJson.ToString(Formatting.Indented);
                 pcbOutput = CopyToOutput(content, rgbOutputFileContents);
             }
-            catch (Exception e)
+            catch
             {
-#if DEBUG
-                throw e;
-#endif
+                progress.GeneratorError(0, 0, "Totally failed to transform this, sorry. :(", 0, 0);
                 pcbOutput = 0;
             }
 
@@ -101,13 +101,47 @@ namespace ARMCustomTool
         {
             if (inputJson.ContainsKey("templateLink"))
             {
+                string absolutePath;
                 var path = inputJson["templateLink"].Value<string>("uri");
-                var basePath = Path.GetDirectoryName(inputPath);
-                var absolutePath = Path.GetFullPath(Path.Combine(basePath, path));
-                // TODO: Handle error
-                var contents = JsonConvert.DeserializeObject<JObject>(fileSystem.ReadFile(absolutePath));
-                inputJson.Remove("templateLink");
-                contents.Properties().ToList().ForEach(x => inputJson.Add(x.Name, x.Value));
+                try
+                {
+                    var basePath = Path.GetDirectoryName(inputPath);
+                    absolutePath = Path.GetFullPath(Path.Combine(basePath, path));
+                }
+                catch(Exception e)
+                {
+                    progress.GeneratorError(0, 0, e.Message + " " + path, 0, 0);
+                    return inputJson;
+                }
+
+                if (!fileSystem.Exists(absolutePath))
+                {
+                    progress.GeneratorError(0, 0, $"File not found at {path}, resolved to absolute {absolutePath}", 0, 0);
+                    return inputJson;
+                }
+                
+                try
+                {
+                    var contents = JsonConvert.DeserializeObject<JObject>(fileSystem.ReadFile(absolutePath));
+                    inputJson.Remove("templateLink");
+                    contents.Properties().ToList().ForEach(x => inputJson.Add(x.Name, x.Value));
+                }
+                catch (NullReferenceException)
+                {
+                    ReportInvalidJson(path);
+                }
+                catch (JsonReaderException)
+                {
+                    ReportInvalidJson(path);
+                }
+                catch (InvalidCastException)
+                {
+                    ReportInvalidJson(path);
+                }
+                catch (Exception e)
+                {
+                    progress.GeneratorError(0, 0, e.Message + " " + path, 0, 0);
+                }
             }
             else
             {
@@ -121,6 +155,11 @@ namespace ARMCustomTool
         {
             inputJson.ToList().ForEach(x => LinkFiles(x));
             return inputJson;
+        }
+
+        private void ReportInvalidJson(string path)
+        {
+            progress.GeneratorError(0, 0, "Content of linked file should be a JSON object. " + path, 0, 0);
         }
 
         private static uint CopyToOutput(string content, IntPtr[] rgbOutputFileContents)

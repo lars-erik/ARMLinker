@@ -1,0 +1,5 @@
+{
+    "type": "Microsoft.Web/connections",
+    "apiVersion": "2016-06-01",
+    "proper": "properties were probably here"
+}

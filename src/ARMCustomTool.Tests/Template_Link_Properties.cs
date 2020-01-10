@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -12,87 +12,170 @@ namespace ARMCustomTool.Tests
     [TestFixture]
     public class Template_Link_Properties
     {
-        [Test]
-        public void Are_Replaced_With_Content_From_File_At_Uri()
-        {
-            const string data = @"{
+        private static string SimpleTemplateWithRelativeResource(string relativePath) =>
+            @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
                 ""parameters"": {},
                 ""resources"": [
                 {
                     ""templateLink"": {
-                        ""uri"": ""./aresource.json""
+                        ""uri"": """ + relativePath + @"""
                     }
                 }]
             }
             ";
 
-            const string linkedData = @"{
-                ""type"": ""Microsoft.Web/connections"",
-                ""apiVersion"": ""2016-06-01"",
-                ""proper"": ""properties were probably here""
-            }";
+        private static string MissingUriTemplate() =>
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""parameters"": {},
+                ""resources"": [
+                {
+                    ""templateLink"": {
+                    }
+                }]
+            }
+            ";
 
-            var fileSystem = new FakeFileSystem();
-            fileSystem.Add("c:\\users\\user\\source\\repos\\project\\aresource.json", linkedData);
-
-            string output = "";
-
-            IntPtr[] dataPtr = new IntPtr[]
-            {
-                Marshal.StringToHGlobalAnsi(output)
-            };
-            uint outputLength = 0;
-
-            var linker = new ARMLinker(fileSystem);
-            linker.Generate(
-                "c:\\users\\user\\source\\repos\\project\\azuredeploy.template.json",
-                data,
-                "",
-                dataPtr,
-                out outputLength,
-                null
+        private void AddAResource() =>
+            fileSystem.Add(
+                "c:\\users\\user\\source\\repos\\project\\aresource.json",
+                @"{
+                    ""type"": ""Microsoft.Web/connections"",
+                    ""apiVersion"": ""2016-06-01"",
+                    ""proper"": ""properties were probably here""
+                }"
             );
 
-            var gotBack = Marshal.PtrToStringAnsi(dataPtr[0]);
-            gotBack = gotBack.Substring(0, (int)outputLength);
+        private FakeFileSystem fileSystem;
+        private ARMLinker linker;
+        private FakeProgress progress;
+        private string inputFilePath = @"c:\users\user\source\repos\project\azuredeploy.template.json";
 
-            Console.WriteLine(gotBack);
+        [SetUp]
+        public void Setup()
+        {
+            fileSystem = new FakeFileSystem();
+            progress = new FakeProgress();
+            linker = new ARMLinker(fileSystem);
         }
 
         [Test]
-        public void Missing_Url()
+        public void Are_Replaced_With_Content_From_File_At_Relative_Uri()
         {
-            Assert.Inconclusive();
+            const string expectedJson = @"
+                {
+                  ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                  ""parameters"": {},
+                  ""resources"": [
+                    {
+                      ""type"": ""Microsoft.Web/connections"",
+                      ""apiVersion"": ""2016-06-01"",
+                      ""proper"": ""properties were probably here""
+                    }
+                  ]
+                }
+            ";
+
+            var relativePath = @"./aresource.json";
+            var input = SimpleTemplateWithRelativeResource(relativePath);
+            AddAResource();
+
+            AssertOutput(expectedJson, inputFilePath, input);
         }
 
         [Test]
-        public void Invalid_Url()
+        [TestCase(@"")]
+        [TestCase(@"-")]
+        [TestCase(@"[]")] // ?? Should we swap object/templateLink with array?
+        public void Invalid_Contents(string content)
         {
-            Assert.Inconclusive();
+            var relativePath = @"./aresource.json";
+            var input = SimpleTemplateWithRelativeResource(relativePath);
+
+            fileSystem.Add(
+                "c:\\users\\user\\source\\repos\\project\\aresource.json",
+                content
+            );
+
+            GenerateOutput(inputFilePath, input);
+
+            Assert.AreEqual(
+                @"Content of linked file should be a JSON object. ./aresource.json",
+                progress.Errors[0].error,
+                progress.Errors[0].error
+            );
         }
 
         [Test]
-        public void Invalid_Contents()
+        public void Ignores_Missing_Uri_Property()
         {
-            Assert.Inconclusive();
+            var input = MissingUriTemplate();
+            AddAResource();
+
+            AssertOutput(input, inputFilePath, input);
         }
 
-    }
-
-    public class FakeFileSystem : IFileSystem
-    {
-        Dictionary<string, string> files = new Dictionary<string, string>();
-
-        public void Add(string path, string data)
+        [Test]
+        public void Reports_Error_For_Missing_File()
         {
-            files.Add(path, data);
+            linker = new ARMLinker(new PhysicalFileSystem());
+
+            var relativePath = @"./../aresource.json";
+            var input = SimpleTemplateWithRelativeResource(relativePath);
+            AddAResource();
+
+            GenerateOutput(inputFilePath, input);
+
+            Assert.AreEqual(
+                @"File not found at ./../aresource.json, resolved to absolute c:\users\user\source\repos\aresource.json",
+                progress.Errors[0].error
+            );
+        }
+
+        [Test]
+        public void Reports_Error_For_Invalid_Url()
+        {
+            linker = new ARMLinker(new PhysicalFileSystem());
+
+            var relativePath = @"file://something.wrong/here";
+            var input = SimpleTemplateWithRelativeResource(relativePath);
+            AddAResource();
+
+            GenerateOutput(inputFilePath, input);
+
+            Assert.AreEqual(
+                @"The given path's format is not supported. file://something.wrong/here",
+                progress.Errors[0].error,
+                progress.Errors[0].error
+            );
         }
 
 
-        public string ReadFile(string path)
+        private void AssertOutput(string expectedJson, string inputFilePath, string input)
         {
-            return files[path];
+            var actual = GenerateOutput(inputFilePath, input);
+            Console.WriteLine(actual);
+            var expected = JObject.Parse(expectedJson).ToString(Formatting.Indented);
+            Assert.AreEqual(expected, actual);
+        }
+
+        private string GenerateOutput(string inputFilePath, string input)
+        {
+            var dataPtr = new[] {Marshal.StringToHGlobalAnsi("")};
+
+            linker.Generate(
+                inputFilePath,
+                input,
+                "",
+                dataPtr,
+                out var outputLength,
+                progress
+            );
+
+            var actual = Marshal.PtrToStringAnsi(dataPtr[0]);
+            actual = actual?.Substring(0, (int) outputLength);
+            return actual;
         }
     }
 }
