@@ -60,7 +60,12 @@
     <None Include="aresource.json" />
     <None Include="dummy.json">
       <Generator>ARMLinker</Generator>
-      <LastGenOutput>dummy.generated.txt</LastGenOutput>
+      <LastGenOutput>dummy.linked.json</LastGenOutput>
+    </None>
+    <None Include="dummy.linked.json">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>dummy.json</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
