@@ -1,3 +1,9 @@
+## Disclaimer
+
+Does not currently work in ARM template projects. :/
+
+## Overview
+
 ARM Templates does not support relative paths. The only way to link to other files is to put them online.  
 This custom tools expects relative paths and merges your ARM templates into a nested "*.linked.json" you can use for CD.
 
