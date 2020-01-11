@@ -16,6 +16,7 @@ namespace ARMCustomTool
     [ComVisible(true)]
     [ProvideObject(typeof(ARMLinker))]
     [CodeGeneratorRegistration(typeof(ARMLinker), "ARM Relative Path Linker", "{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}", GeneratesDesignTimeSource = true)]
+    [CodeGeneratorRegistration(typeof(ARMLinker), "ARM Relative Path Linker", "{6D6714E1-EC76-42BE-9A63-5F6C9FB05D24}", GeneratesDesignTimeSource = true)]
     // ReSharper disable once InconsistentNaming
     public sealed class ARMLinker : IVsSingleFileGenerator
     {
