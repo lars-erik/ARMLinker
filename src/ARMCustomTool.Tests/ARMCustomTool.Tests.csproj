@@ -74,6 +74,10 @@
       <Project>{FA1D0C6F-87FA-47F3-8C28-50A059EB647A}</Project>
       <Name>ARMCustomTool</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ARMLinker\ARMLinker.csproj">
+      <Project>{2C48BD9E-8168-403F-ADBB-E14151CF125A}</Project>
+      <Name>ARMLinker</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

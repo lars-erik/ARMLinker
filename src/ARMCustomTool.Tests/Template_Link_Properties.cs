@@ -48,16 +48,16 @@ namespace ARMCustomTool.Tests
             );
 
         private FakeFileSystem fileSystem;
-        private ARMLinker linker;
-        private FakeProgress progress;
+        private ArmJsonLinker linker;
+        private FakeProgress reporter;
         private string inputFilePath = @"c:\users\user\source\repos\project\azuredeploy.template.json";
 
         [SetUp]
         public void Setup()
         {
             fileSystem = new FakeFileSystem();
-            progress = new FakeProgress();
-            linker = new ARMLinker(fileSystem);
+            reporter = new FakeProgress();
+            linker = new ArmJsonLinker(inputFilePath, fileSystem, reporter);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace ARMCustomTool.Tests
             var input = SimpleTemplateWithRelativeResource(relativePath);
             AddAResource();
 
-            AssertOutput(expectedJson, inputFilePath, input);
+            AssertOutput(expectedJson, input);
         }
 
         [Test]
@@ -98,12 +98,12 @@ namespace ARMCustomTool.Tests
                 content
             );
 
-            GenerateOutput(inputFilePath, input);
+            GenerateOutput(input);
 
             Assert.AreEqual(
                 @"Content of linked file should be a JSON object. ./aresource.json",
-                progress.Errors[0].error,
-                progress.Errors[0].error
+                reporter.Errors[0].error,
+                reporter.Errors[0].error
             );
         }
 
@@ -113,68 +113,56 @@ namespace ARMCustomTool.Tests
             var input = MissingUriTemplate();
             AddAResource();
 
-            AssertOutput(input, inputFilePath, input);
+            AssertOutput(input, input);
         }
 
         [Test]
         public void Reports_Error_For_Missing_File()
         {
-            linker = new ARMLinker(new PhysicalFileSystem());
+            linker = new ArmJsonLinker(inputFilePath, new PhysicalFileSystem(), reporter);
 
             var relativePath = @"./../aresource.json";
             var input = SimpleTemplateWithRelativeResource(relativePath);
             AddAResource();
 
-            GenerateOutput(inputFilePath, input);
+            GenerateOutput(input);
 
             Assert.AreEqual(
                 @"File not found at ./../aresource.json, resolved to absolute c:\users\user\source\repos\aresource.json",
-                progress.Errors[0].error
+                reporter.Errors[0].error
             );
         }
 
         [Test]
         public void Reports_Error_For_Invalid_Url()
         {
-            linker = new ARMLinker(new PhysicalFileSystem());
+            linker = new ArmJsonLinker(inputFilePath, new PhysicalFileSystem(), reporter);
 
             var relativePath = @"file://something.wrong/here";
             var input = SimpleTemplateWithRelativeResource(relativePath);
             AddAResource();
 
-            GenerateOutput(inputFilePath, input);
+            GenerateOutput(input);
 
             Assert.AreEqual(
                 @"The given path's format is not supported. file://something.wrong/here",
-                progress.Errors[0].error,
-                progress.Errors[0].error
+                reporter.Errors[0].error,
+                reporter.Errors[0].error
             );
         }
 
 
-        private void AssertOutput(string expectedJson, string inputFilePath, string input)
+        private void AssertOutput(string expectedJson, string input)
         {
-            var actual = GenerateOutput(inputFilePath, input);
+            var actual = GenerateOutput(input);
             Console.WriteLine(actual);
             var expected = JObject.Parse(expectedJson).ToString(Formatting.Indented);
             Assert.AreEqual(expected, actual);
         }
 
-        private string GenerateOutput(string inputFilePath, string input)
+        private string GenerateOutput(string input)
         {
-            var dataPtr = new[] {Marshal.StringToHGlobalAnsi("")};
-
-            linker.Generate(
-                inputFilePath,
-                input,
-                "",
-                dataPtr,
-                out var outputLength,
-                progress
-            );
-
-            var actual = Marshal.PtrToStringAnsi(dataPtr[0]);
-            actual = actual?.Substring(0, (int) outputLength);
+            var actual = linker.LinkContent(input);
             return actual;
         }
     }
