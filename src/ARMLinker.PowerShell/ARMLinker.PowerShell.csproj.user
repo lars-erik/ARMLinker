@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>-nologo -command "import-module %27.\ARMLinker.PowerShell.dll%27%3b Convert-TemplateLinks ..\..\..\ARMCustomTool.Tests\dummy.json -Verbose%3b Read-Host"</StartArguments>
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe</StartProgram>
+  </PropertyGroup>
+</Project>
