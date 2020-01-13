@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace ARMCustomTool.Tests
 {
-    public class FakeProgress : IVsGeneratorProgress
+    public class FakeProgress : IVsGeneratorProgress, IReporter
     {
         public List<(int warning, uint level, string error, uint line, uint columnd)> Errors = new List<(int warning, uint level, string error, uint line, uint columnd)>();
         public List<(uint complete, uint total)> Progresses = new List<(uint complete, uint total)>();
@@ -18,6 +18,11 @@ namespace ARMCustomTool.Tests
         {
             Progresses.Add((nComplete, nTotal));
             return 0;
+        }
+
+        public void ReportError(string message)
+        {
+            GeneratorError(0, 0, message, 0, 0);
         }
     }
 }

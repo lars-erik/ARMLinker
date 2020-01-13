@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="azuredeploy.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="azuredeploy.json">
+      <Generator>ARMLinker</Generator>
+      <LastGenOutput>azuredeploy.linked.json</LastGenOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="azuredeploy.linked.json">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>azuredeploy.json</DependentUpon>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -11,7 +11,7 @@
     <AssemblyName>ARMLinker.PowerShell</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,9 +51,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ARMCustomTool\ARMCustomTool.csproj">
-      <Project>{fa1d0c6f-87fa-47f3-8c28-50a059eb647a}</Project>
-      <Name>ARMCustomTool</Name>
+    <ProjectReference Include="..\ARMLinker\ARMLinker.csproj">
+      <Project>{2c48bd9e-8168-403f-adbb-e14151cf125a}</Project>
+      <Name>ARMLinker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
