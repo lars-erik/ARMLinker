@@ -10,7 +10,7 @@ using ARMCustomTool;
 namespace ARMLinker.PowerShell
 {
     [Cmdlet("Convert", "TemplateLinks")]
-    public class ARMLinker : Cmdlet, IReporter
+    public class ARMLinker : PSCmdlet, IReporter
     {
         [Parameter(Position = 0, Mandatory = true)]
         public string InputPath { get; set; }
@@ -20,9 +20,10 @@ namespace ARMLinker.PowerShell
 
         protected override void ProcessRecord()
         {
-            var fullPath = Path.GetFullPath(InputPath);
-            var linker = new ArmJsonLinker(fullPath, new PhysicalFileSystem(), this);
-            var output = linker.LinkContent(File.ReadAllText(fullPath));
+            var inputPath = ResolvePath(InputPath);
+
+            var linker = new ArmJsonLinker(inputPath, new PhysicalFileSystem(), this);
+            var output = linker.LinkContent(File.ReadAllText(inputPath));
 
             if (String.IsNullOrWhiteSpace(OutputPath))
             { 
@@ -30,8 +31,24 @@ namespace ARMLinker.PowerShell
             }
             else
             {
-                File.WriteAllText(Path.GetFullPath(OutputPath), output);
+                File.WriteAllText(ResolvePath(OutputPath), output);
             }
+        }
+
+        private string ResolvePath(string absoluteOrRelativePath)
+        {
+            string resolvedPath;
+            if (Path.IsPathRooted(absoluteOrRelativePath))
+            {
+                resolvedPath = Path.GetFullPath(absoluteOrRelativePath);
+            }
+            else
+            {
+                resolvedPath =
+                    Path.GetFullPath(Path.Combine(SessionState.Path.CurrentFileSystemLocation.Path, absoluteOrRelativePath));
+            }
+
+            return resolvedPath;
         }
 
         public void ReportError(string message)

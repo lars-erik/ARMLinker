@@ -1,13 +1,23 @@
 ## Disclaimer
 
-Does not currently work in ARM template projects. :/
+Custom Tool does not currently work in ARM template projects. :/  
+For now, the merging can be done using a PowerShell module / cmdlet.
 
 ## Overview
 
 ARM Templates does not support relative paths. The only way to link to other files is to put them online.  
-This custom tools expects relative paths and merges your ARM templates into a nested "*.linked.json" you can use for CD.
+This tool expects relative paths and merges your ARM templates into a one template.
 
-## Example
+## PowerShell Usage
+
+    install-module ARMLinker.PowerShell
+    Convert-TemplateLinks -InputPath <path to main template> [-OutputPath <path to output file>]
+
+If no output path is specified, the merged JSON is output from the cmdlet.
+
+## Example input/output
+
+*Example shows optimal usage with VS custom tool, but for now only way is to use the PS-module*
 
 **azuredeploy.json**
 
