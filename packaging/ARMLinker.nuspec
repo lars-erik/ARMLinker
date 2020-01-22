@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ARMLinker</id>
+    <version>1.0.0-beta01</version>
+    <authors>Lars-Erik Aabech</authors>
+    <owners>Lars-Erik Aabech</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/lars-erik/ARMLinker</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A tool to link local JSON into ARM templates</description>
+    <copyright>Copyright 2020</copyright>
+    <tags>Azure Resource Management JSON link ARM</tags>
+  </metadata>
+  <files>
+    <file src="./../src/ARMLinker.PowerShell/bin/release/ARMLinker.dll" target="tools"/>
+    <file src="./../src/ARMLinker.PowerShell/bin/release/ARMLinker.PowerShell.dll" target="tools"/>
+    <file src="./../src/ARMLinker.PowerShell/bin/release/Newtonsoft.Json.dll" target="tools"/>
+    <file src="./../src/ARMLinker.PowerShell/bin/release/*.psd1" target="tools"/>
+    <file src="./init.ps1" target="tools/init.ps1"/>
+  </files>
+</package>
