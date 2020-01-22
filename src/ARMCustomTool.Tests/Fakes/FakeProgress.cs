@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace ARMCustomTool.Tests
+namespace ARMCustomTool.Tests.Fakes
 {
     public class FakeProgress : IVsGeneratorProgress, IReporter
     {

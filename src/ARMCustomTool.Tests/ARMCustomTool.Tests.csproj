@@ -51,10 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FakeFileSystem.cs" />
-    <Compile Include="FakeProgress.cs" />
+    <Compile Include="Fakes\FakeFileSystem.cs" />
+    <Compile Include="Fakes\FakeProgress.cs" />
+    <Compile Include="LinkerTestBase.cs" />
     <Compile Include="Template_Link_Properties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Template_Link_With_Json_Path.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="aresource.json" />
@@ -79,6 +81,7 @@
       <Name>ARMLinker</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

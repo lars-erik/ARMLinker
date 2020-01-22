@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ARMCustomTool.Tests
+namespace ARMCustomTool.Tests.Fakes
 {
     public class FakeFileSystem : IFileSystem
     {

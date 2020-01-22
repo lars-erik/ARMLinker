@@ -43,46 +43,13 @@ namespace ARMCustomTool
         {
             if (inputJson.ContainsKey("templateLink"))
             {
-                string absolutePath;
-                var path = inputJson["templateLink"].Value<string>("uri");
                 try
                 {
-                    var basePath = Path.GetDirectoryName(inputPath);
-                    absolutePath = Path.GetFullPath(Path.Combine(basePath, path));
+                    TryMergeLink(inputJson);
                 }
-                catch(Exception e)
+                catch
                 {
-                    reporter.ReportError(e.Message + " " + path);
                     return inputJson;
-                }
-
-                if (!fileSystem.Exists(absolutePath))
-                {
-                    reporter.ReportError($"File not found at {path}, resolved to absolute {absolutePath}");
-                    return inputJson;
-                }
-                
-                try
-                {
-                    var contents = JsonConvert.DeserializeObject<JObject>(fileSystem.ReadFile(absolutePath));
-                    inputJson.Remove("templateLink");
-                    contents.Properties().ToList().ForEach(x => inputJson.Add(x.Name, x.Value));
-                }
-                catch (NullReferenceException)
-                {
-                    ReportInvalidJson(path);
-                }
-                catch (JsonReaderException)
-                {
-                    ReportInvalidJson(path);
-                }
-                catch (InvalidCastException)
-                {
-                    ReportInvalidJson(path);
-                }
-                catch (Exception e)
-                {
-                    reporter.ReportError(e.Message + " " + path);
                 }
             }
             else
@@ -91,6 +58,93 @@ namespace ARMCustomTool
             }
 
             return inputJson;
+        }
+
+        private void TryMergeLink(JObject inputObject)
+        {
+            var linkData = inputObject["templateLink"];
+            var linkPath = linkData.Value<string>("uri");
+            var jsonPath = linkData.Value<string>("jsonPath");
+
+            var absolutePath = AbsolutePath(linkPath);
+            VerifyFileExists(absolutePath, linkPath);
+
+            try
+            {
+                var linkedObject = GetLinkedContent(absolutePath, jsonPath);
+                ReplaceLink(inputObject, linkedObject);
+            }
+            catch (NullReferenceException)
+            {
+                ReportInvalidJson(linkPath);
+                throw;
+            }
+            catch (JsonReaderException)
+            {
+                ReportInvalidJson(linkPath);
+                throw;
+            }
+            catch (InvalidCastException)
+            {
+                ReportInvalidJson(linkPath);
+                throw;
+            }
+            catch (Exception e)
+            {
+                reporter.ReportError(e.Message + " " + linkPath);
+                throw;
+            }
+        }
+
+        private JObject GetLinkedContent(string absolutePath, string jsonPath)
+        {
+            var contents = JsonConvert.DeserializeObject<JObject>(fileSystem.ReadFile(absolutePath));
+            if (jsonPath != null)
+            {
+                foreach (var part in jsonPath.Split('.'))
+                {
+                    try
+                    {
+                        contents = (JObject) contents[part];
+                    }
+                    catch
+                    {
+                        throw new Exception($"Invalid json path {jsonPath} at {part}. Tool currently only supports dot separated paths to objects.");
+                    }
+                }
+            }
+
+            return contents;
+        }
+
+        private static void ReplaceLink(JObject inputJson, JObject contents)
+        {
+            inputJson.Remove("templateLink");
+            contents.Properties().ToList().ForEach(x => inputJson.Add(x.Name, x.Value));
+        }
+
+        private void VerifyFileExists(string absolutePath, string linkPath)
+        {
+            if (!fileSystem.Exists(absolutePath))
+            {
+                reporter.ReportError($"File not found at {linkPath}, resolved to absolute {absolutePath}");
+                throw new Exception("File not found");
+            }
+        }
+
+        private string AbsolutePath(string linkPath)
+        {
+            try
+            {
+                var basePath = Path.GetDirectoryName(inputPath);
+                var absolutePath = Path.GetFullPath(Path.Combine(basePath ?? "", linkPath));
+                return absolutePath;
+            }
+            catch (Exception e)
+            {
+                reporter.ReportError(e.Message + " " + linkPath);
+                throw;
+            }
         }
 
         private JToken LinkFiles(JArray inputJson)
