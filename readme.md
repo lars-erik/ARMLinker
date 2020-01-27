@@ -13,13 +13,11 @@ A fuller narrative with example usage can be read on [my blog here](http://blog.
     import-module ARMLinker
     Convert-TemplateLinks -InputPath <path to main template> [-OutputPath <path to output file>]
 
-If no output path is specified, the merged JSON is output from the cmdlet.
+If no output path is specified, the merged JSON is written to output.
 
 ## Example input/output
 
-*Example shows optimal usage with VS custom tool, but for now only way is to use the PS-module*
-
-**azuredeploy.json**
+**azuredeploy.linked.json**
 
     {
         "$schema": "https//schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -41,8 +39,7 @@ If no output path is specified, the merged JSON is output from the cmdlet.
         "properties": "..."
     }
 
-By adding the `ARMLinker` custom tool to `azuredeploy.json`, you will get another file
-nested beneath `azuredeploy.json` called `azuredeploy.linked.json`:
+Running `Convert-TemplateLinks azuredeploy.linked.json azuredeploy.json` will output a merged version of the two in a file called `azuredeploy.json`:
 
     {
         "$schema": "https//schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -58,7 +55,7 @@ nested beneath `azuredeploy.json` called `azuredeploy.linked.json`:
 
 If the JSON you want to link is at some deeper level in the linked JSON, you can specify a "jsonPath" as well:
 
-**azuredeploy.json**
+**azuredeploy.linked.json**
 
     {
         "$schema": "https//schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
