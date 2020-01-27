@@ -1,7 +1,7 @@
 ## Overview
 
-ARM Templates does not support relative paths. The only way to link to other files is to put them online.  
-This tool expects relative paths and merges your ARM templates into a one template.  
+ARM Templates does not support local and relative paths. The only way to link to other files is to put them online.  
+This tool expects local and/or relative paths and merges your ARM templates into a one template.  
 A fuller narrative with example usage can be read on [my blog here](http://blog.aabech.no/archive/armlinker-100-released/).
 
 ## Install
